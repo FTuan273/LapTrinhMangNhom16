@@ -5,3 +5,5 @@ dist/
 nbbuild/
 .nb-gradle/
 *.class
+/CoreServer/target/
+/Client/target/
