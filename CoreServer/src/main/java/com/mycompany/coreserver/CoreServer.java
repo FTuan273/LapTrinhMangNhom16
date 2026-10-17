@@ -11,7 +11,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 
 public class CoreServer {
     private static final int PORT = 8888;
-    private static final String KEYSTORE_PATH = "certs/keystore.jks"; 
+    private static final String KEYSTORE_PATH = "../certs/keystore.jks";
     private static final String KEYSTORE_PASSWORD = "password123";
 
     public static void main(String[] args) {
