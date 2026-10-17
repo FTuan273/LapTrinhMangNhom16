@@ -17,28 +17,7 @@ public class CoreServer {
 
     public static void main(String[] args) {
         try {
-            // Lưu ý: Đoạn code nạp Keystore tạm thời comment lại để bạn chạy thử được luôn
-            // khi chưa tạo file keystore.jks bằng keytool.
-            // Khi nào có file, hãy bỏ comment các dòng dưới đây.
-
-            /*
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(KEYSTORE_PATH), KEYSTORE_PASSWORD.toCharArray());
-
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
-
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            sslContext.init(kmf.getKeyManagers(), null, null);
-
-            SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
-            ServerSocket serverSocket = ssf.createServerSocket(PORT);
-            */
-
-            // Tạm thời dùng ServerSocket thường để test tiến trình Git
-            ServerSocket serverSocket = new ServerSocket(PORT);
-
-            System.out.println("Core Server đang lắng nghe tại port: " + PORT);
+         System.out.println("Core Server đang lắng nghe tại port: " + PORT);
 
             ExecutorService executor = Executors.newFixedThreadPool(10);
 
