@@ -6,5 +6,4 @@ nbbuild/
 .nb-gradle/
 *.class
 /CoreServer/target/
-/Client/target/
-/admin-dashboard/target/
+

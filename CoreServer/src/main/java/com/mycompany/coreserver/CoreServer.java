@@ -15,7 +15,7 @@ import javax.net.ssl.SSLSocket;
 
 public class CoreServer {
     private static final int PORT = 8888;
-    private static final String KEYSTORE_PASSWORD = "password123";
+
 
     private static File findKeyStoreFile() {
         File f1 = new File("../certs/keystore.jks");
