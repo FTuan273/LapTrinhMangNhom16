@@ -6,3 +6,4 @@ nbbuild/
 .nb-gradle/
 *.class
 /CoreServer/target/
+
