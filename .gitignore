@@ -1,9 +1,24 @@
-# NetBeans specific
+# NetBeans / IDE specific
 nbproject/private/
 build/
 dist/
 nbbuild/
 .nb-gradle/
-*.class
-/CoreServer/target/
+.idea/
+.vscode/
+*.swp
+*.iml
 
+# Java build artifacts
+*.class
+target/
+**/target/
+bin/
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
