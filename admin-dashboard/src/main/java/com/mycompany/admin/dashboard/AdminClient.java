@@ -65,19 +65,10 @@ public class AdminClient {
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(trustStore);
             
-            // 2. Cấu hình SSLContext TLSv1.2 cho Client
-            // Trong môi trường dev Windows, Antivirus (Avast/Kaspersky...) thường can thiệp gói tin TLS (SSL Inspection)
-            // và cấp lại chứng chỉ giả lập làm TrustStore không nhận diện được.
-            // Do đó sử dụng TrustManager bỏ qua lỗi này (tương đương rejectUnauthorized: false).
-            javax.net.ssl.TrustManager[] trustManagers = new javax.net.ssl.TrustManager[] {
-                new javax.net.ssl.X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return new java.security.cert.X509Certificate[0]; }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                }
-            };
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            sslContext.init(null, trustManagers, new java.security.SecureRandom());
+            // 2. Cấu hình SSLContext với TrustManager thật từ truststore.jks
+            // Chỉ tin tưởng chứng chỉ có trong truststore -> chống giả mạo server (MITM)
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
             // 3. Khởi tạo kết nối SSLSocket và Bắt tay TLS
             System.out.println("Đang kết nối tới Server " + HOST + ":" + PORT + "...");
             SSLSocketFactory ssf = sslContext.getSocketFactory();
