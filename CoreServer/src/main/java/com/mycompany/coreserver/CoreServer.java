@@ -6,8 +6,10 @@ import java.io.FileInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -54,6 +56,12 @@ public class CoreServer {
     }
 
     public static void main(String[] args) {
+        // Fix lỗi encoding tiếng Việt: đặt System.out và System.err sang UTF-8
+        try {
+            System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+            System.setErr(new PrintStream(System.err, true, StandardCharsets.UTF_8));
+        } catch (Exception ignored) {}
+
         try {
             File keyStoreFile = findKeyStoreFile();
             System.out.println("===============================================================");
@@ -326,7 +334,7 @@ public class CoreServer {
          */
         private String extractField(String json, String key) {
             try {
-                String pattern = "\"" + key + "\"\\s*:\\s*\"?([^,\"}]+)\"?";
+                String pattern = "\"" + key + "\"\\s*:\\s*\"?([^,\"]+)\"?";
                 java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
                 java.util.regex.Matcher m = p.matcher(json);
                 if (m.find()) {
