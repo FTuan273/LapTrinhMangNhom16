@@ -91,8 +91,12 @@ public class CoreServer {
             sslContext.init(kmf.getKeyManagers(), null, null);
 
             // 4. Khởi tạo SSLServerSocket từ cấu hình trên
+            // Dùng createServerSocket() KHÔNG tham số rồi bind() thủ công để set SO_REUSEADDR
+            // trước khi bind, tránh lỗi "Address already in use" khi restart nhanh trong NetBeans.
             SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
-            ServerSocket serverSocket = ssf.createServerSocket(PORT);
+            ServerSocket serverSocket = ssf.createServerSocket();
+            serverSocket.setReuseAddress(true);
+            serverSocket.bind(new java.net.InetSocketAddress(PORT));
 
             System.out.println("[CoreServer] TLS Server khởi động thành công trên cổng: " + PORT);
             System.out.println("[CoreServer] Sẵn sàng tiếp nhận kết nối bảo mật qua SSL/TLS...");

@@ -3,8 +3,11 @@ package com.mycompany.coreserver;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.PrintStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,14 +26,26 @@ public class PlainTextDemoServer {
     private static final int PORT = 9999;
 
     public static void main(String[] args) throws Exception {
+        // Fix encoding tiếng Việt trong Output NetBeans / Terminal
+        try {
+            System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+            System.setErr(new PrintStream(System.err, true, StandardCharsets.UTF_8));
+        } catch (Exception ignored) {}
+
         ExecutorService pool = Executors.newCachedThreadPool();
-        try (ServerSocket server = new ServerSocket(PORT)) {
+        ServerSocket server = new ServerSocket();
+        server.setReuseAddress(true);
+        server.bind(new InetSocketAddress(PORT));
+
+        try {
             System.out.println("[PLAIN] Server KHÔNG MÃ HÓA (đối chứng) đang lắng nghe cổng " + PORT);
             while (true) {
                 Socket s = server.accept();
                 s.setTcpNoDelay(true);
                 pool.submit(() -> handle(s));
             }
+        } finally {
+            server.close();
         }
     }
 

@@ -5,6 +5,7 @@
  *   node demo_orders.js            -> gửi 5 đơn, mỗi đơn cách nhau 2 giây
  *   node demo_orders.js 10 1000    -> gửi 10 đơn, cách nhau 1000 ms
  *   node demo_orders.js 1 0 <IP>   -> gửi 1 đơn tới server ở địa chỉ IP khác
+ *   node demo_orders.js 3 2000 <host>:<port> -> server ở cổng khác (vd qua tunnel)
  *   node demo_orders.js 1 0 127.0.0.1 --plain
  *                                  -> gửi qua TCP THUẦN cổng 9999 tới PlainTextDemoServer
  *                                     (KHÔNG mã hóa, chỉ để đối chứng trong Wireshark)
@@ -23,8 +24,9 @@ const PLAIN = process.argv.includes('--plain');
 const ARGS = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const COUNT = parseInt(ARGS[0] || '5', 10);
 const DELAY_MS = parseInt(ARGS[1] || '2000', 10);
-const HOST = ARGS[2] || '127.0.0.1';
-const PORT = PLAIN ? 9999 : 8888;
+// Tham số thứ 3 có thể là "host" hoặc "host:port" (vd khi dùng tunnel: abc.a.free.pinggy.link:41234)
+const [HOST, PORT_ARG] = (ARGS[2] || '127.0.0.1').split(':');
+const PORT = PORT_ARG ? parseInt(PORT_ARG, 10) : (PLAIN ? 9999 : 8888);
 
 // server.cer do keytool xuất ở dạng DER (nhị phân); Node cần PEM -> tự chuyển
 function loadCaPem() {
@@ -49,7 +51,7 @@ const CUSTOMERS = [
   ['Trần Thị Bình', '0987654321', '789 Điện Biên Phủ, Bình Thạnh'],
   ['Lê Hoàng Cường', '0912345678', '45 Lê Lợi, Gò Vấp'],
   ['Phạm Minh Duy', '0934567890', '23 Võ Văn Ngân, Thủ Đức'],
-  ['Võ Thu Hà', '0976543210', '101 Cách Mạng Tháng 8, Quận 3'],
+  ['Vũ Thu Hà', '0976543210', '101 Cách Mạng Tháng 8, Quận 3'],
 ];
 const PAY = ['COD', 'MOMO', 'ZALOPAY', 'BANKING'];
 
@@ -80,15 +82,17 @@ function frame(obj) {
 
 async function sendAll() {
   if (PLAIN) {
-    console.log(`[Web] !!! Đã kết nối TCP THUẦN (KHÔNG mã hóa) tới ${HOST}:${PORT} – chỉ để đối chứng`);
+    // TCP thuần — socket là net.Socket, không có getProtocol()/getCipher()
+    console.log(`[Web] !!! Đã kết nối TCP THUẦN (KHÔNG mã hóa) tới ${HOST}:${PORT} — chỉ để đối chứng Wireshark`);
   } else {
-    console.log(`[Web] Đã kết nối TLS tới ${HOST}:${PORT} – ${socket.getProtocol()} – ${socket.getCipher().name}`);
+    // TLS — socket là tls.TLSSocket, có đầy đủ method TLS
+    console.log(`[Web] Đã kết nối TLS tới ${HOST}:${PORT} — ${socket.getProtocol()} — ${socket.getCipher().name}`);
     console.log(`[Web] Chứng chỉ server đã được xác thực: ${socket.authorized}`);
   }
   for (let i = 0; i < COUNT; i++) {
     const o = makeOrder(i);
     socket.write(frame(o));
-    console.log(`[Web -> Server] ${o.orderId} | ${o.customer} | ${o.total.toLocaleString('vi-VN')} đ`);
+    console.log(`[Web -> Server] ${o.orderId} | ${o.customer} | ${o.total.toLocaleString('vi-VN')}đ`);
     if (i < COUNT - 1) await new Promise(r => setTimeout(r, DELAY_MS));
   }
   setTimeout(() => socket.end(), 1000);
@@ -112,7 +116,10 @@ socket.on('data', chunk => {
     if (buf.length < 4 + len) break;
     const msg = JSON.parse(buf.subarray(4, 4 + len).toString('utf8'));
     buf = buf.subarray(4 + len);
-    if (msg.type === 'ORDER_RESP') { ok++; console.log(`[Server -> Web] ORDER_RESP ${msg.orderId || ''}: ${msg.status}`); }
+    if (msg.type === 'ORDER_RESP') {
+      ok++;
+      console.log(`[Server -> Web] ORDER_RESP ${msg.orderId || ''}: ${msg.status}`);
+    }
   }
 });
 socket.on('error', e => console.error('[Web] Lỗi:', e.code || '', e.message));
